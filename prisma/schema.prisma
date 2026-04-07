@@ -1,0 +1,804 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// AUTH & USER
+// ==========================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  settings      UserSettings?
+  authAccounts  AuthAccount[]
+  sessions      Session[]
+  taskGroups    TaskGroup[]
+  tasks         Task[]
+  accounts      Account[]
+  transactions  Transaction[]
+  categories    TransactionCategory[]
+  savingsGoals  SavingsGoal[]
+  recurringTxs  RecurringTransaction[]
+  exchangeRates ExchangeRate[]
+  workoutRoutines WorkoutRoutine[]
+  workoutLogs     WorkoutLog[]
+  habits          Habit[]
+  habitLogs       HabitLog[]
+  dailyRoutines   DailyRoutine[]
+  routineSessions DailyRoutineSession[]
+  studySubjects   StudySubject[]
+  studySessions   StudySession[]
+}
+
+model UserSettings {
+  id                  String    @id @default(cuid())
+  userId              String    @unique
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  primaryCurrency     String    @default("USD")
+  dateFormat          String    @default("dd/MM/yyyy")
+  weekStartsOn        Int       @default(1)
+  theme               String    @default("system")
+  locale              String    @default("es")
+  timezone            String    @default("America/Argentina/Buenos_Aires")
+  financialStartDate  DateTime?
+  showDashboardTasks  Boolean   @default(true)
+  showDashboardFinance Boolean  @default(true)
+  showDashboardGoals  Boolean   @default(true)
+  // Module toggles
+  moduleTasksEnabled    Boolean @default(true)
+  moduleFinancesEnabled Boolean @default(true)
+  moduleAccountsEnabled Boolean @default(true)
+  moduleGoalsEnabled    Boolean @default(true)
+  moduleReportsEnabled  Boolean @default(true)
+  moduleGymEnabled      Boolean @default(true)
+  moduleHabitsEnabled   Boolean @default(true)
+  moduleStudyEnabled    Boolean @default(true)
+  moduleCalendarEnabled Boolean @default(true)
+  // Dashboard customization
+  dashboardWidgetOrder  String?   @db.Text  // JSON: widget order + visibility + sizes
+  dashboardWallpaper    String?             // "solid:#1e1b4b", "gradient:from-blue-950-to-violet-950", "image:url"
+  accentColor           String    @default("blue")
+  colorTheme            String    @default("default")
+  customPrimaryColor    String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model AuthAccount {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ==========================================
+// TASKS - HIERARCHICAL SYSTEM
+// ==========================================
+
+model TaskGroup {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?   @db.Text
+  color       String?
+  icon        String?
+  position    Int       @default(0)
+  goalId      String?
+  goal        SavingsGoal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  archivedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  tasks       Task[]
+}
+
+model Task {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupId     String
+  group       TaskGroup    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  parentId    String?
+  parent      Task?        @relation("TaskChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Task[]       @relation("TaskChildren")
+  goalId      String?
+  goal        SavingsGoal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  title       String
+  description String?      @db.Text
+  priority    TaskPriority @default(MEDIUM)
+  status      TaskStatus   @default(PENDING)
+  dueDate     DateTime?
+  dueTime     String?
+  isFavorite  Boolean      @default(false)
+  position    Int          @default(0)
+  level       Int          @default(0)
+  isCollapsed Boolean      @default(false)
+  completedAt DateTime?
+  archivedAt  DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  tags        TaskTag[]
+
+  @@index([groupId, parentId, position])
+  @@index([userId, status])
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model TaskTag {
+  id     String  @id @default(cuid())
+  taskId String
+  task   Task    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  name   String
+  color  String?
+
+  @@unique([taskId, name])
+}
+
+// ==========================================
+// FINANCE - ACCOUNTS
+// ==========================================
+
+model Account {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  type            AccountType
+  currency        String      @default("USD")
+  initialBalance  Float       @default(0)
+  color           String?
+  icon            String?
+  notes           String?     @db.Text
+  isActive        Boolean     @default(true)
+  archivedAt      DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  transactionsFrom Transaction[] @relation("FromAccount")
+  transactionsTo   Transaction[] @relation("ToAccount")
+}
+
+enum AccountType {
+  CASH
+  BANK
+  VIRTUAL_WALLET
+  SAVINGS
+  INVESTMENT
+  CREDIT_CARD
+  CRYPTO
+  OTHER
+}
+
+// ==========================================
+// FINANCE - TRANSACTIONS
+// ==========================================
+
+model Transaction {
+  id            String           @id @default(cuid())
+  userId        String
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          TransactionType
+  amount        Float
+  currency      String           @default("USD")
+  date          DateTime         @default(now())
+  description   String?
+  notes         String?          @db.Text
+  categoryId    String?
+  category      TransactionCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  accountId     String?
+  account       Account?         @relation("FromAccount", fields: [accountId], references: [id], onDelete: SetNull)
+  toAccountId   String?
+  toAccount     Account?         @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: SetNull)
+  goalId        String?
+  goal          SavingsGoal?     @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  paymentMethod PaymentMethod?
+  isFixed       Boolean          @default(false)
+  receiptUrl    String?
+  recurringId   String?
+  recurring     RecurringTransaction? @relation(fields: [recurringId], references: [id], onDelete: SetNull)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  tags          TransactionTag[]
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
+}
+
+enum PaymentMethod {
+  CASH
+  DEBIT
+  CREDIT
+  TRANSFER
+  VIRTUAL_WALLET
+  CRYPTO
+  OTHER
+}
+
+model TransactionCategory {
+  id           String            @id @default(cuid())
+  userId       String?
+  user         User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  type         TransactionType
+  icon         String?
+  color        String?
+  parentId     String?
+  parent       TransactionCategory?  @relation("SubCategories", fields: [parentId], references: [id], onDelete: SetNull)
+  children     TransactionCategory[] @relation("SubCategories")
+  isDefault    Boolean           @default(false)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  transactions Transaction[]
+}
+
+model TransactionTag {
+  id            String      @id @default(cuid())
+  transactionId String
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  name          String
+  color         String?
+
+  @@unique([transactionId, name])
+}
+
+// ==========================================
+// SAVINGS GOALS (EXCEL-BASED MULTI-GOAL)
+// ==========================================
+
+model SavingsGoal {
+  id              String       @id @default(cuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Identity
+  name            String
+  description     String?      @db.Text
+  category        String?
+  color           String?
+  icon            String?
+  priority        GoalPriority @default(MEDIUM)
+  status          GoalStatus   @default(ACTIVE)
+
+  // Parameters (from Excel "Parámetros" sheet)
+  currency        String       @default("USD")
+  targetMin       Float                            // meta mínima
+  targetIdeal     Float                            // meta ideal
+  dailySavingsBase Float       @default(0)         // ahorro base diario
+  startDate       DateTime     @default(now())     // fecha de inicio
+  deadline        DateTime?                        // fecha objetivo
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relations
+  dailyEntries    SavingsGoalDailyEntry[]
+  assets          SavingsGoalAsset[]
+  movements       SavingsGoalMovement[]
+  transactions    Transaction[]
+  tasks           Task[]
+  taskGroups      TaskGroup[]
+  habits          Habit[]
+}
+
+enum GoalPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum GoalStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+// Ahorro Diario - one row per day between startDate and deadline
+model SavingsGoalDailyEntry {
+  id        String      @id @default(cuid())
+  goalId    String
+  goal      SavingsGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  date      DateTime
+  amount    Float?               // null = no entry yet (projected), filled = real
+  currency  String      @default("USD") // currency of the amount entered
+  note      String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([goalId, date])
+  @@index([goalId, date])
+}
+
+// Activos vinculados al goal
+model SavingsGoalAsset {
+  id          String      @id @default(cuid())
+  goalId      String
+  goal        SavingsGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  description String
+  type        AssetType   @default(OTHER)
+  currency    String      @default("USD")
+  amount      Float                          // monto original
+  status      AssetStatus @default(AVAILABLE)
+  note        String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+enum AssetType {
+  CASH
+  BANK_ACCOUNT
+  INVESTMENT
+  CRYPTO
+  RECEIVABLE    // deuda a cobrar
+  PROPERTY
+  OTHER
+}
+
+enum AssetStatus {
+  AVAILABLE     // disponible ahora
+  PENDING       // por cobrar / no disponible aún
+  LOCKED        // bloqueado
+  SOLD          // vendido / realizado
+}
+
+// Movimientos vinculados al goal (gastos, préstamos, extras)
+model SavingsGoalMovement {
+  id          String       @id @default(cuid())
+  goalId      String
+  goal        SavingsGoal  @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  date        DateTime     @default(now())
+  description String
+  type        MovementType
+  currency    String       @default("USD")
+  amount      Float                          // siempre positivo
+  note        String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([goalId, date])
+}
+
+enum MovementType {
+  EXPENSE        // gasto contra el ahorro
+  LOAN_GIVEN     // préstamo dado (sale del ahorro)
+  LOAN_RECEIVED  // préstamo recibido (entra al ahorro)
+  ADJUSTMENT     // ajuste manual
+  BONUS          // ingreso extra al goal
+}
+
+// ==========================================
+// RECURRING TRANSACTIONS
+// ==========================================
+
+model RecurringTransaction {
+  id            String          @id @default(cuid())
+  userId        String
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  type          TransactionType
+  amount        Float
+  currency      String          @default("USD")
+  categoryId    String?
+  accountId     String?
+  paymentMethod PaymentMethod?
+  frequency     Frequency
+  interval      Int             @default(1)
+  startDate     DateTime
+  endDate       DateTime?
+  nextDueDate   DateTime
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  transactions  Transaction[]
+}
+
+enum Frequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+  CUSTOM
+}
+
+// ==========================================
+// EXCHANGE RATES
+// ==========================================
+
+model ExchangeRate {
+  id           String   @id @default(cuid())
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fromCurrency String
+  toCurrency   String
+  rate         Float
+  date         DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  @@unique([fromCurrency, toCurrency, date])
+}
+
+// ==========================================
+// GYM / WORKOUT ROUTINES
+// ==========================================
+
+model WorkoutRoutine {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  color       String?
+  isActive    Boolean   @default(true)
+  position    Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  days        WorkoutDay[]
+  logs        WorkoutLog[]
+}
+
+model WorkoutDay {
+  id          String          @id @default(cuid())
+  routineId   String
+  routine     WorkoutRoutine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  name        String          // "Push Day", "Día de Piernas", etc.
+  dayOfWeek   Int?            // 0=Sun..6=Sat, null = sin día fijo
+  position    Int             @default(0)
+  notes       String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  exercises   WorkoutExercise[]
+  logs        WorkoutLog[]
+}
+
+model WorkoutExercise {
+  id            String      @id @default(cuid())
+  dayId         String
+  day           WorkoutDay  @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  name          String      // "Press de Banca", "Sentadilla"
+  muscleGroup   String?     // "Pecho", "Piernas", "Espalda"
+  sets          Int         @default(3)
+  reps          String      @default("10") // "10", "8-12", "al fallo"
+  weight        String?     // "80kg", "bodyweight", null
+  restSeconds   Int         @default(90)
+  notes         String?
+  position      Int         @default(0)
+  supersetGroup String?     // agrupar en superset
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  logEntries    WorkoutLogEntry[]
+}
+
+model WorkoutLog {
+  id          String         @id @default(cuid())
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routineId   String?
+  routine     WorkoutRoutine? @relation(fields: [routineId], references: [id], onDelete: SetNull)
+  dayId       String?
+  day         WorkoutDay?    @relation(fields: [dayId], references: [id], onDelete: SetNull)
+  date        DateTime       @default(now())
+  duration    Int?           // minutos
+  notes       String?
+  rating      Int?           // 1-5 estrellas
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  entries     WorkoutLogEntry[]
+
+  @@index([userId, date])
+}
+
+model WorkoutLogEntry {
+  id          String          @id @default(cuid())
+  logId       String
+  log         WorkoutLog      @relation(fields: [logId], references: [id], onDelete: Cascade)
+  exerciseId  String?
+  exercise    WorkoutExercise? @relation(fields: [exerciseId], references: [id], onDelete: SetNull)
+  exerciseName String         // snapshot del nombre
+  setNumber   Int
+  reps        Int?
+  weight      Float?
+  notes       String?
+  completed   Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+}
+
+// ==========================================
+// HABITS & DAILY ROUTINES
+// ==========================================
+
+model Habit {
+  id              String       @id @default(cuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title           String
+  description     String?
+  icon            String?
+  color           String?
+  category        String?      // salud, finanzas, productividad, bienestar, estudio, etc.
+
+  // Type: checkbox, count, duration, amount, avoid
+  type            HabitType    @default(CHECKBOX)
+  targetValue     Float?       // meta diaria: 8 vasos, 30 minutos, 5 USD
+  unit            String?      // vasos, minutos, páginas, USD, pasos
+
+  // Frequency
+  frequencyType   HabitFrequency @default(DAILY)
+  frequencyDays   String?      // JSON: [1,2,3,4,5] for weekdays, or specific days
+  frequencyCount  Int?         // X times per week/month
+
+  // Time of day preference
+  timeOfDay       String?      // morning, afternoon, evening, flexible
+
+  // Linking
+  goalId          String?
+  goal            SavingsGoal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
+
+  // Motivation
+  motivationNote  String?
+
+  // Status
+  status          HabitStatus  @default(ACTIVE)
+  startDate       DateTime     @default(now())
+  endDate         DateTime?
+  position        Int          @default(0)
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  logs            HabitLog[]
+  routineItems    DailyRoutineItem[]
+
+  @@index([userId, status])
+}
+
+enum HabitType {
+  CHECKBOX    // simple yes/no
+  COUNT       // count towards target (vasos, páginas)
+  DURATION    // time-based (minutos)
+  AMOUNT      // money-based (USD, ARS)
+  AVOID       // negative habit to avoid
+}
+
+enum HabitFrequency {
+  DAILY           // every day
+  WEEKDAYS        // mon-fri
+  SPECIFIC_DAYS   // specific days of week (frequencyDays JSON)
+  X_PER_WEEK      // X times per week (frequencyCount)
+  X_PER_MONTH     // X times per month (frequencyCount)
+}
+
+enum HabitStatus {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+  COMPLETED
+}
+
+model HabitLog {
+  id        String   @id @default(cuid())
+  habitId   String
+  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime
+  completed Boolean  @default(false)
+  value     Float?   // actual value: 6 vasos, 25 minutos, 3 USD
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@unique([habitId, date])
+  @@index([userId, date])
+}
+
+// ==========================================
+// DAILY ROUTINES
+// ==========================================
+
+model DailyRoutine {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  icon            String?
+  color           String?
+  timeOfDay       String?   // morning, afternoon, evening, anytime
+  estimatedMinutes Int?
+  isActive        Boolean   @default(true)
+  position        Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  items           DailyRoutineItem[]
+  sessions        DailyRoutineSession[]
+}
+
+model DailyRoutineItem {
+  id          String       @id @default(cuid())
+  routineId   String
+  routine     DailyRoutine @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  habitId     String?
+  habit       Habit?       @relation(fields: [habitId], references: [id], onDelete: SetNull)
+  title       String       // snapshot or custom action name
+  duration    Int?         // estimated minutes for this step
+  position    Int          @default(0)
+  createdAt   DateTime     @default(now())
+}
+
+model DailyRoutineSession {
+  id          String       @id @default(cuid())
+  routineId   String
+  routine     DailyRoutine @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        DateTime     @default(now())
+  startedAt   DateTime     @default(now())
+  finishedAt  DateTime?
+  notes       String?
+  createdAt   DateTime     @default(now())
+
+  items       DailyRoutineSessionItem[]
+
+  @@index([userId, date])
+}
+
+model DailyRoutineSessionItem {
+  id          String              @id @default(cuid())
+  sessionId   String
+  session     DailyRoutineSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  title       String
+  completed   Boolean             @default(false)
+  completedAt DateTime?
+  position    Int                 @default(0)
+}
+
+// ==========================================
+// STUDY SYSTEM
+// ==========================================
+
+model StudySubject {
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String
+  description      String?
+  color            String?
+  icon             String?
+  difficulty       Int?      // 1-5
+  status           String    @default("active") // active, paused, completed, archived
+  weeklyTargetHours Float?
+  teacher          String?
+  notes            String?   @db.Text
+  position         Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  topics           StudyTopic[]
+  sessions         StudySession[]
+  exams            StudyExam[]
+  scheduleBlocks   StudyScheduleBlock[]
+}
+
+model StudyTopic {
+  id               String       @id @default(cuid())
+  subjectId        String
+  subject          StudySubject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  title            String
+  description      String?
+  estimatedHours   Float?
+  completedPercent Int          @default(0) // 0-100
+  priority         Int          @default(0) // 0=low, 1=medium, 2=high
+  status           String       @default("pending") // pending, in_progress, completed
+  position         Int          @default(0)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  sessions         StudySession[]
+}
+
+model StudyScheduleBlock {
+  id          String       @id @default(cuid())
+  subjectId   String
+  subject     StudySubject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  dayOfWeek   Int          // 0=Sun..6=Sat
+  startTime   String       // "18:00"
+  endTime     String       // "20:00"
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+}
+
+model StudySession {
+  id                   String        @id @default(cuid())
+  userId               String
+  user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectId            String?
+  subject              StudySubject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  topicId              String?
+  topic                StudyTopic?   @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  title                String?
+  method               String        @default("pomodoro_25_5") // pomodoro_25_5, pomodoro_50_10, deep_work, free
+  status               String        @default("planned") // planned, active, completed, skipped, cancelled
+  scheduledStart       DateTime?
+  scheduledEnd         DateTime?
+  actualStart          DateTime?
+  actualEnd            DateTime?
+  plannedDurationMin   Int?
+  actualDurationMin    Int?
+  pomodoroTarget       Int?
+  pomodoroCompleted    Int           @default(0)
+  interruptionCount    Int           @default(0)
+  focusScore           Int?          // 1-5
+  notes                String?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  @@index([userId, status])
+  @@index([subjectId])
+}
+
+model StudyExam {
+  id          String       @id @default(cuid())
+  subjectId   String
+  subject     StudySubject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  title       String
+  date        DateTime
+  priority    Int          @default(1) // 0=low, 1=medium, 2=high
+  notes       String?
+  status      String       @default("pending") // pending, studying, ready, done
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}

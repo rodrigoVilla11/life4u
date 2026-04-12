@@ -22,7 +22,7 @@ export function BottomNav({ modules }: { modules: ModuleConfig }) {
   );
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t bg-card/95 backdrop-blur-lg safe-area-bottom">
+    <nav aria-label="Navegación principal" className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-border/50 bg-card/80 backdrop-blur-xl safe-area-bottom">
       <div className="flex items-center justify-around h-16 px-1">
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
@@ -30,13 +30,24 @@ export function BottomNav({ modules }: { modules: ModuleConfig }) {
             <Link
               key={item.href}
               href={item.href}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 rounded-xl transition-colors min-h-[44px]",
-                isActive ? "text-primary" : "text-muted-foreground"
+                "relative flex flex-col items-center justify-center gap-0.5 flex-1 py-1.5 rounded-2xl transition-all duration-200 min-h-[44px]",
+                isActive ? "text-primary" : "text-muted-foreground active:scale-95"
               )}
             >
-              <item.icon className={cn("h-5 w-5", isActive && "stroke-[2.5]")} />
-              <span className={cn("text-[10px] leading-tight", isActive ? "font-semibold" : "font-medium")}>
+              {/* Active indicator dot */}
+              {isActive && (
+                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-primary shadow-sm shadow-primary/50" />
+              )}
+              <item.icon className={cn(
+                "h-5 w-5 transition-all duration-200",
+                isActive && "stroke-[2.5] scale-110"
+              )} />
+              <span className={cn(
+                "text-[10px] leading-tight transition-all",
+                isActive ? "font-bold" : "font-medium"
+              )}>
                 {item.label}
               </span>
             </Link>

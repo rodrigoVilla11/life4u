@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getGoalFull } from "@/actions/goals";
 import { GoalDashboardClient } from "@/components/goals/goal-dashboard-client";
+
+export const metadata: Metadata = { title: "Meta de Ahorro" };
 
 interface Props {
   params: Promise<{ id: string }>;

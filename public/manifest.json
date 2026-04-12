@@ -1,0 +1,22 @@
+{
+  "name": "Life4U - Productividad Personal",
+  "short_name": "Life4U",
+  "description": "Organiza tareas, controla finanzas, alcanza tus metas de ahorro.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0a0a0a",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

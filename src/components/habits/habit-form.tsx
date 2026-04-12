@@ -79,7 +79,7 @@ export function HabitForm({ open, onOpenChange, habit }: HabitFormProps) {
       if (isEditing) { await updateHabit(habit!.id, data); toast.success("Hábito actualizado"); }
       else { await createHabit(data); toast.success("Hábito creado"); }
       onOpenChange(false);
-    } catch { toast.error("Error al guardar"); }
+    } catch (err) { console.error("HabitForm.handleSubmit:", err); toast.error("Error al guardar"); }
     finally { setLoading(false); }
   }
 

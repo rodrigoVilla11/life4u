@@ -199,9 +199,23 @@ export function applyColorTheme(themeId: string, isDark: boolean) {
  */
 export function applyCustomPrimary(hex: string, isDark: boolean) {
   const root = document.documentElement;
-  // Convert hex to approximate oklch - simplified
-  // For proper conversion we'd need a color library, but this works for common colors
+
+  // First reset any existing theme overrides
+  for (const t of COLOR_THEMES) {
+    for (const key of Object.keys(t.light)) root.style.removeProperty(key);
+    for (const key of Object.keys(t.dark)) root.style.removeProperty(key);
+  }
+
   root.style.setProperty("--primary", hex);
   root.style.setProperty("--ring", hex);
   root.style.setProperty("--sidebar-primary", hex);
+
+  // Ensure foreground contrasts with the custom primary when used as bg
+  // The primary-foreground needs to be readable on this color
+  const c = hex.replace("#", "");
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  root.style.setProperty("--primary-foreground", luminance > 0.5 ? "oklch(0.12 0 0)" : "oklch(0.985 0 0)");
 }

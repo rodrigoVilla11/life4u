@@ -244,7 +244,8 @@ export function DashboardClient({
         });
         setEditMode(false);
         toast.success("Dashboard guardado");
-      } catch {
+      } catch (err) {
+        console.error("DashboardClient.handleSave:", err);
         toast.error("Error al guardar");
       }
     });

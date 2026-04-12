@@ -51,7 +51,7 @@ export function GoalDashboardClient({ goal, dashboard, dailyTable, dailyEntries,
   function handleDelete() {
     startTransition(async () => {
       try { await deleteGoal(goal.id); toast.success("Objetivo eliminado"); router.push("/goals"); }
-      catch { toast.error("Error al eliminar"); }
+      catch (err) { console.error("GoalDashboardClient.handleDelete:", err); toast.error("Error al eliminar"); }
     });
   }
 
@@ -59,7 +59,7 @@ export function GoalDashboardClient({ goal, dashboard, dailyTable, dailyEntries,
     <div className="space-y-5 md:space-y-6">
       {/* ===== HEADER ===== */}
       <div className="flex items-start gap-3">
-        <Button variant="ghost" size="icon-sm" onClick={() => router.push("/goals")} className="mt-1 shrink-0">
+        <Button variant="ghost" size="icon-sm" onClick={() => router.push("/goals")} className="mt-1 shrink-0" aria-label="Volver a metas">
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1 min-w-0">
@@ -78,10 +78,10 @@ export function GoalDashboardClient({ goal, dashboard, dailyTable, dailyEntries,
           </div>
         </div>
         <div className="flex gap-1.5 shrink-0">
-          <Button variant="outline" size="icon-sm" onClick={() => setEditOpen(true)}>
+          <Button variant="outline" size="icon-sm" onClick={() => setEditOpen(true)} aria-label="Editar meta">
             <Pencil className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon-sm" className="text-red-500 hover:text-red-600" onClick={() => setDeleteOpen(true)}>
+          <Button variant="outline" size="icon-sm" className="text-red-500 hover:text-red-600" onClick={() => setDeleteOpen(true)} aria-label="Eliminar meta">
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>

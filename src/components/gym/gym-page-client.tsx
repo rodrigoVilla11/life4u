@@ -56,7 +56,7 @@ export function GymPageClient({ routines, stats, logs }: GymPageClientProps) {
       toast.success("Rutina creada");
       setOpen(false);
       setName(""); setDescription(""); setColor(PRESET_COLORS[4]);
-    } catch { toast.error("Error al crear la rutina"); }
+    } catch (err) { console.error("GymPageClient.handleCreate:", err); toast.error("Error al crear la rutina"); }
     finally { setLoading(false); }
   }
 

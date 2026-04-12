@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Star, BookOpen, ClipboardList, CalendarDays } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,13 +26,14 @@ interface SubjectCardProps {
 
 export function SubjectCard({ subject, onEdit }: SubjectCardProps) {
   const router = useRouter();
+  const [now] = useState(() => Date.now());
 
   const nextExam = subject.exams.find((e) => {
     const d = new Date(e.date);
-    return d >= new Date() && e.status !== "done";
+    return d.getTime() >= now && e.status !== "done";
   });
   const daysToExam = nextExam
-    ? Math.max(0, Math.ceil((new Date(nextExam.date).getTime() - Date.now()) / 86400000))
+    ? Math.max(0, Math.ceil((new Date(nextExam.date).getTime() - now) / 86400000))
     : null;
 
   // Fake weekly hours progress (would need session data for real calc)

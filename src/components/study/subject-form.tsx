@@ -101,7 +101,8 @@ export function SubjectForm({ open, onOpenChange, subject }: SubjectFormProps) {
           toast.success("Materia creada");
         }
         onOpenChange(false);
-      } catch {
+      } catch (err) {
+        console.error("SubjectForm.handleSubmit:", err);
         toast.error("Error al guardar la materia");
       }
     });

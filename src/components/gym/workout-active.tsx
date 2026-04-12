@@ -90,7 +90,7 @@ export function WorkoutActive({ log, dayName, routineName, onFinish, previousEnt
     if (existing) clearTimeout(existing);
     pendingUpdates.current.set(entryId, setTimeout(async () => {
       try { await updateLogEntry(entryId, data); }
-      catch { /* silent - state is optimistic */ }
+      catch (err) { console.error("WorkoutActive.debouncedUpdate:", err); /* state is optimistic */ }
       pendingUpdates.current.delete(entryId);
     }, 500));
   }, []);
@@ -120,7 +120,7 @@ export function WorkoutActive({ log, dayName, routineName, onFinish, previousEnt
     const newCompleted = !entry.completed;
     setEntries((prev) => prev.map((e) => e.id === entry.id ? { ...e, completed: newCompleted } : e));
     try { await updateLogEntry(entry.id, { completed: newCompleted }); }
-    catch { setEntries((prev) => prev.map((e) => e.id === entry.id ? { ...e, completed: !newCompleted } : e)); }
+    catch (err) { console.error("WorkoutActive.handleToggleSet:", err); setEntries((prev) => prev.map((e) => e.id === entry.id ? { ...e, completed: !newCompleted } : e)); }
   }
 
   function handleUpdateReps(entry: LogEntry, reps: string) {
@@ -145,7 +145,7 @@ export function WorkoutActive({ log, dayName, routineName, onFinish, previousEnt
       await finishWorkout(log.id, { duration: durationMin, rating: rating > 0 ? rating : undefined, notes: notes.trim() || undefined });
       toast.success("Entrenamiento completado");
       onFinish();
-    } catch { toast.error("Error al finalizar"); }
+    } catch (err) { console.error("WorkoutActive.handleFinish:", err); toast.error("Error al finalizar"); }
     finally { setFinishing(false); }
   }
 

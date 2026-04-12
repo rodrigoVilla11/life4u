@@ -14,8 +14,33 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Life4U - Tareas, Finanzas y Metas",
-  description: "Aplicación de productividad personal y finanzas. Organiza tareas, controla gastos e ingresos, y alcanza tus metas de ahorro.",
+  metadataBase: new URL(process.env.NEXTAUTH_URL || "http://localhost:3000"),
+  title: {
+    default: "Life4U - Productividad Personal",
+    template: "%s | Life4U",
+  },
+  description:
+    "Organiza tareas, controla gastos e ingresos, alcanza tus metas de ahorro, trackea hábitos y rutinas de gym.",
+  keywords: ["productividad", "finanzas", "tareas", "metas", "hábitos", "gym", "estudio"],
+  openGraph: {
+    title: "Life4U - Productividad Personal",
+    description:
+      "Organiza tareas, controla gastos e ingresos, alcanza tus metas de ahorro.",
+    type: "website",
+    locale: "es_AR",
+    siteName: "Life4U",
+  },
+  twitter: {
+    card: "summary",
+    title: "Life4U - Productividad Personal",
+    description:
+      "Organiza tareas, controla gastos e ingresos, alcanza tus metas de ahorro.",
+  },
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({

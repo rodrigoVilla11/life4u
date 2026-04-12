@@ -51,7 +51,7 @@ export function TaskItem({ task, depth, onAddChild, onEditTask, onTaskToggled }:
   const act = useCallback((fn: () => Promise<unknown>) => {
     startTransition(async () => {
       try { await fn(); router.refresh(); }
-      catch { toast.error("Error al ejecutar acción"); }
+      catch (err) { console.error("TaskItem.act:", err); toast.error("Error al ejecutar acción"); }
     });
   }, [router]);
 

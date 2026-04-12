@@ -39,7 +39,8 @@ export function TaskGroupCard({ group, onOpen, onEdit }: TaskGroupCardProps) {
     try {
       await deleteTaskGroup(group.id);
       toast.success("Grupo eliminado");
-    } catch {
+    } catch (err) {
+      console.error("TaskGroupCard.handleDelete:", err);
       toast.error("Error al eliminar grupo");
     }
     setDeleteOpen(false);
@@ -49,7 +50,8 @@ export function TaskGroupCard({ group, onOpen, onEdit }: TaskGroupCardProps) {
     try {
       await archiveTaskGroup(group.id);
       toast.success("Grupo archivado");
-    } catch {
+    } catch (err) {
+      console.error("TaskGroupCard.handleArchive:", err);
       toast.error("Error al archivar");
     }
   }

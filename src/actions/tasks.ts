@@ -147,23 +147,27 @@ export async function deleteTaskGroup(id: string) {
 
 export async function reorderGroups(orderedIds: string[]) {
   const user = await getRequiredUser();
-  for (let i = 0; i < orderedIds.length; i++) {
-    await prisma.taskGroup.update({
-      where: { id: orderedIds[i], userId: user.id },
-      data: { position: i },
-    });
-  }
+  await prisma.$transaction(
+    orderedIds.map((id, i) =>
+      prisma.taskGroup.update({
+        where: { id, userId: user.id },
+        data: { position: i },
+      })
+    )
+  );
   revalidatePath("/tasks");
 }
 
 export async function reorderTasks(orderedIds: string[]) {
   const user = await getRequiredUser();
-  for (let i = 0; i < orderedIds.length; i++) {
-    await prisma.task.update({
-      where: { id: orderedIds[i], userId: user.id },
-      data: { position: i },
-    });
-  }
+  await prisma.$transaction(
+    orderedIds.map((id, i) =>
+      prisma.task.update({
+        where: { id, userId: user.id },
+        data: { position: i },
+      })
+    )
+  );
   revalidatePath("/tasks");
 }
 

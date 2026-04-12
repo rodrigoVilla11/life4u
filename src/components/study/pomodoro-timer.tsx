@@ -129,7 +129,8 @@ export function PomodoroTimer({ session, subjectName, topicName, onComplete, onC
       });
       toast.success("Sesion completada");
       onComplete();
-    } catch {
+    } catch (err) {
+      console.error("PomodoroTimer.handleSaveComplete:", err);
       toast.error("Error al guardar la sesion");
     }
   };

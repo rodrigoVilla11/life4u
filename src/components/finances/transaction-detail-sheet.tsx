@@ -58,7 +58,8 @@ export function TransactionDetailSheet({ transaction: tx, open, onOpenChange, on
       toast.success("Movimiento eliminado");
       setDeleteOpen(false);
       onOpenChange(false);
-    } catch {
+    } catch (err) {
+      console.error("TransactionDetailSheet.handleDelete:", err);
       toast.error("Error al eliminar");
     }
   }

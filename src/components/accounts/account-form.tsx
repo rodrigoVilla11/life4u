@@ -75,7 +75,8 @@ export function AccountForm({ open, onOpenChange, editAccount }: AccountFormProp
         toast.success("Cuenta creada");
       }
       onOpenChange(false);
-    } catch {
+    } catch (err) {
+      console.error("AccountForm.handleSubmit:", err);
       toast.error("Error al guardar");
     } finally {
       setLoading(false);

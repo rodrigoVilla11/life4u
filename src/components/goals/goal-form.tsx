@@ -82,7 +82,8 @@ export function GoalForm({ open, onOpenChange, goal }: GoalFormProps) {
         }
         reset();
         onOpenChange(false);
-      } catch {
+      } catch (err) {
+        console.error("GoalForm.onSubmit:", err);
         toast.error(isEditing ? "Error al actualizar el objetivo" : "Error al crear el objetivo");
       }
     });

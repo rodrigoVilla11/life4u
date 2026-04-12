@@ -36,7 +36,8 @@ export function ThemePicker({
     onAccentColorChange(colorName);
     try {
       await saveDashboardConfig({ accentColor: colorName });
-    } catch {
+    } catch (err) {
+      console.error("ThemePicker.handleAccentChange:", err);
       toast.error("Error al guardar el color");
     }
   }
@@ -45,7 +46,8 @@ export function ThemePicker({
     onWallpaperChange(wallpaperId);
     try {
       await saveDashboardConfig({ wallpaper: wallpaperId });
-    } catch {
+    } catch (err) {
+      console.error("ThemePicker.handleWallpaperChange:", err);
       toast.error("Error al guardar el fondo");
     }
   }

@@ -118,6 +118,7 @@ export function SubjectDetailClient({ subject }: Props) {
   const [isPending, startTransition] = useTransition();
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [now] = useState(() => Date.now());
 
   // Topic form
   const [showTopicForm, setShowTopicForm] = useState(false);
@@ -156,7 +157,8 @@ export function SubjectDetailClient({ subject }: Props) {
         await deleteSubject(subject.id);
         toast.success("Materia eliminada");
         router.push("/study");
-      } catch {
+      } catch (err) {
+        console.error("SubjectDetailClient.handleDelete:", err);
         toast.error("Error al eliminar");
       }
     });
@@ -181,7 +183,8 @@ export function SubjectDetailClient({ subject }: Props) {
         setTopicDescription("");
         setTopicEstimatedHours("");
         setTopicPriority("0");
-      } catch {
+      } catch (err) {
+        console.error("SubjectDetailClient.handleAddTopic:", err);
         toast.error("Error al agregar tema");
       }
     });
@@ -193,7 +196,8 @@ export function SubjectDetailClient({ subject }: Props) {
         const newPercent = topic.completedPercent >= 100 ? 0 : 100;
         const newStatus = newPercent >= 100 ? "completed" : "in_progress";
         await updateTopic(topic.id, { completedPercent: newPercent, status: newStatus });
-      } catch {
+      } catch (err) {
+        console.error("SubjectDetailClient.handleToggleTopicComplete:", err);
         toast.error("Error al actualizar tema");
       }
     });
@@ -204,7 +208,8 @@ export function SubjectDetailClient({ subject }: Props) {
       try {
         await deleteTopic(id);
         toast.success("Tema eliminado");
-      } catch {
+      } catch (err) {
+        console.error("SubjectDetailClient.handleDeleteTopic:", err);
         toast.error("Error al eliminar tema");
       }
     });
@@ -221,7 +226,8 @@ export function SubjectDetailClient({ subject }: Props) {
         });
         toast.success("Horario agregado");
         setShowScheduleForm(false);
-      } catch {
+      } catch (err) {
+        console.error("SubjectDetailClient.handleAddSchedule:", err);
         toast.error("Error al agregar horario");
       }
     });
@@ -232,7 +238,8 @@ export function SubjectDetailClient({ subject }: Props) {
       try {
         await deleteScheduleBlock(id);
         toast.success("Horario eliminado");
-      } catch {
+      } catch (err) {
+        console.error("SubjectDetailClient.handleDeleteSchedule:", err);
         toast.error("Error al eliminar horario");
       }
     });
@@ -258,7 +265,8 @@ export function SubjectDetailClient({ subject }: Props) {
         setExamDate("");
         setExamPriority("1");
         setExamNotes("");
-      } catch {
+      } catch (err) {
+        console.error("SubjectDetailClient.handleAddExam:", err);
         toast.error("Error al agregar examen");
       }
     });
@@ -269,7 +277,8 @@ export function SubjectDetailClient({ subject }: Props) {
       try {
         await deleteExam(id);
         toast.success("Examen eliminado");
-      } catch {
+      } catch (err) {
+        console.error("SubjectDetailClient.handleDeleteExam:", err);
         toast.error("Error al eliminar examen");
       }
     });
@@ -280,7 +289,8 @@ export function SubjectDetailClient({ subject }: Props) {
     startTransition(async () => {
       try {
         await updateExam(exam.id, { status: nextStatus });
-      } catch {
+      } catch (err) {
+        console.error("SubjectDetailClient.handleToggleExamStatus:", err);
         toast.error("Error al actualizar examen");
       }
     });
@@ -306,7 +316,8 @@ export function SubjectDetailClient({ subject }: Props) {
           method: sessionMethod,
           pomodoroTarget: sessionMethod !== "free" ? parseInt(sessionPomodoroTarget) || 4 : null,
         });
-      } catch {
+      } catch (err) {
+        console.error("SubjectDetailClient.handleCreateAndStartSession:", err);
         toast.error("Error al iniciar sesion");
       }
     });
@@ -643,9 +654,9 @@ export function SubjectDetailClient({ subject }: Props) {
                 const examDateObj = new Date(exam.date);
                 const daysLeft = Math.max(
                   0,
-                  Math.ceil((examDateObj.getTime() - Date.now()) / 86400000)
+                  Math.ceil((examDateObj.getTime() - now) / 86400000)
                 );
-                const isPast = examDateObj < new Date();
+                const isPast = examDateObj.getTime() < now;
 
                 return (
                   <Card key={exam.id} className="rounded-2xl">

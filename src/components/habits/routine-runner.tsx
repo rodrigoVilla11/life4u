@@ -51,7 +51,8 @@ export function RoutineRunner({ session, routineName, routineIcon, onFinish }: R
         const nextIndex = items.findIndex((i, idx) => idx > index && !i.completed);
         if (nextIndex !== -1) setCurrentStep(nextIndex);
       }
-    } catch {
+    } catch (err) {
+      console.error("RoutineRunner.handleToggle:", err);
       // Revert
       setItems((prev) => prev.map((i) => i.id === itemId ? { ...i, completed: !i.completed } : i));
     }
@@ -62,7 +63,8 @@ export function RoutineRunner({ session, routineName, routineIcon, onFinish }: R
       await finishRoutineSession(session.id);
       toast.success("Rutina completada");
       onFinish();
-    } catch {
+    } catch (err) {
+      console.error("RoutineRunner.handleFinish:", err);
       toast.error("Error al finalizar");
     }
   }

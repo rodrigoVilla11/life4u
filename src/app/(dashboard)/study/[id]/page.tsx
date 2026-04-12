@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getSubject } from "@/actions/study";
 import { SubjectDetailClient } from "@/components/study/subject-detail-client";
+
+export const metadata: Metadata = { title: "Estudio" };
 
 export default async function SubjectDetailPage({
   params,

@@ -3,7 +3,7 @@ import { getGoals } from "@/actions/goals";
 import { TasksPageClient } from "@/components/tasks/tasks-page-client";
 
 export const metadata = {
-  title: "Tareas - Life4U",
+  title: "Tareas",
 };
 
 export default async function TasksPage() {

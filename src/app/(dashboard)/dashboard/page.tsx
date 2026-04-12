@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
 import { getDashboardData, getMonthlyReport, getDashboardConfig } from "@/actions/dashboard";
+
+export const metadata: Metadata = { title: "Dashboard" };
 import { getHabitStats } from "@/actions/habits";
 import { getStudyStats } from "@/actions/study";
 import { getWorkoutStats } from "@/actions/gym";

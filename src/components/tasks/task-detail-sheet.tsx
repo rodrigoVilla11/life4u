@@ -51,7 +51,7 @@ export function TaskDetailSheet({ task, open, onOpenChange, groupId, goals = [],
   function act(fn: () => Promise<unknown>) {
     startTransition(async () => {
       try { await fn(); router.refresh(); }
-      catch { toast.error("Error"); }
+      catch (err) { console.error("TaskDetailSheet.act:", err); toast.error("Error al ejecutar acción"); }
     });
   }
 

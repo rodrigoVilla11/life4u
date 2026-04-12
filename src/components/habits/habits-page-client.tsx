@@ -41,7 +41,8 @@ export function HabitsPageClient({ habits, stats, routines }: HabitsPageClientPr
       const routine = routines.find((r) => r.id === routineId);
       const session = await startRoutineSession(routineId);
       setActiveSession({ session, routineName: routine?.name ?? "Rutina", routineIcon: routine?.icon ?? undefined });
-    } catch {
+    } catch (err) {
+      console.error("HabitsPageClient.handleStartRoutine:", err);
       toast.error("Error al iniciar rutina");
     }
   }

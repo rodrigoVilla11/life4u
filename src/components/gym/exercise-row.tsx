@@ -63,7 +63,8 @@ export function ExerciseRow({ exercise, onEdit }: ExerciseRowProps) {
       await deleteExercise(exercise.id);
       toast.success("Ejercicio eliminado");
       setConfirmDelete(false);
-    } catch {
+    } catch (err) {
+      console.error("ExerciseRow.handleDelete:", err);
       toast.error("Error al eliminar el ejercicio");
     } finally {
       setDeleting(false);

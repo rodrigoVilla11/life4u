@@ -56,7 +56,8 @@ export function AccountDetailSheet({ account, open, onOpenChange, onEdit }: Acco
       toast.success("Cuenta eliminada");
       setDeleteOpen(false);
       onOpenChange(false);
-    } catch {
+    } catch (err) {
+      console.error("AccountDetailSheet.handleDelete:", err);
       toast.error("Error al eliminar");
     }
   }
@@ -66,7 +67,8 @@ export function AccountDetailSheet({ account, open, onOpenChange, onEdit }: Acco
       await updateAccount(account!.id, { isActive: false });
       toast.success("Cuenta archivada");
       onOpenChange(false);
-    } catch {
+    } catch (err) {
+      console.error("AccountDetailSheet.handleArchive:", err);
       toast.error("Error al archivar");
     }
   }
@@ -77,7 +79,8 @@ export function AccountDetailSheet({ account, open, onOpenChange, onEdit }: Acco
       await updateAccount(account!.id, { notes });
       toast.success("Notas guardadas");
       setNotesChanged(false);
-    } catch {
+    } catch (err) {
+      console.error("AccountDetailSheet.handleSaveNotes:", err);
       toast.error("Error al guardar notas");
     } finally {
       setSaving(false);

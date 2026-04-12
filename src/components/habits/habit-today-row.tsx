@@ -51,7 +51,8 @@ export function HabitTodayRow({ habit }: HabitTodayRowProps) {
     startTransition(async () => {
       try {
         await quickToggleHabit(habit.id, todayStr());
-      } catch {
+      } catch (err) {
+        console.error("HabitTodayRow.handleToggle:", err);
         setCompleted(!newCompleted);
         toast.error("Error al actualizar el habito");
       }
@@ -70,7 +71,8 @@ export function HabitTodayRow({ habit }: HabitTodayRowProps) {
           completed: isComplete,
           value: clamped,
         });
-      } catch {
+      } catch (err) {
+        console.error("HabitTodayRow.handleValueChange:", err);
         toast.error("Error al actualizar el habito");
       }
     });

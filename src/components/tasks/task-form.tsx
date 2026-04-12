@@ -121,7 +121,8 @@ export function TaskForm({
         toast.success("Tarea creada");
       }
       onOpenChange(false);
-    } catch {
+    } catch (err) {
+      console.error("TaskForm.onSubmit:", err);
       toast.error("Error al guardar tarea");
     } finally {
       setLoading(false);

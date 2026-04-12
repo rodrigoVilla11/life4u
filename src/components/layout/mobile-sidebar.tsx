@@ -33,16 +33,18 @@ export function MobileSidebar({ modules }: { modules?: ModuleConfig }) {
   );
 
   return (
-    <div className="flex flex-col h-full bg-card">
-      <div className="flex items-center h-16 px-5 border-b">
+    <div className="flex flex-col h-full bg-card/95 backdrop-blur-xl">
+      {/* Logo */}
+      <div className="flex items-center h-16 px-5 border-b border-border/50">
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">L4U</span>
+          <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center shadow-md shadow-primary/20">
+            <span className="text-primary-foreground font-black text-sm tracking-tighter">L4U</span>
           </div>
-          <span className="font-semibold text-[17px] tracking-tight">Life4U</span>
+          <span className="font-bold text-[17px] tracking-tight">Life4U</span>
         </Link>
       </div>
 
+      {/* Nav */}
       <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
@@ -51,13 +53,16 @@ export function MobileSidebar({ modules }: { modules?: ModuleConfig }) {
               <Link
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-3.5 py-3 rounded-xl text-[15px] font-medium transition-colors",
+                  "group flex items-center gap-3 px-3.5 py-3 rounded-xl text-[15px] font-medium transition-all duration-200",
                   isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/80"
                 )}
               >
-                <item.icon className="h-5 w-5 shrink-0" />
+                <item.icon className={cn(
+                  "h-5 w-5 shrink-0 transition-transform",
+                  !isActive && "group-hover:scale-110"
+                )} />
                 <span>{item.label}</span>
               </Link>
             </SheetClose>
@@ -65,12 +70,13 @@ export function MobileSidebar({ modules }: { modules?: ModuleConfig }) {
         })}
       </nav>
 
-      <div className="p-3 border-t">
+      {/* Logout */}
+      <div className="p-3 border-t border-border/50">
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="flex items-center gap-3 px-3.5 py-3 rounded-xl text-[15px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent w-full transition-colors"
+          className="group flex items-center gap-3 px-3.5 py-3 rounded-xl text-[15px] font-medium text-muted-foreground hover:text-red-500 dark:hover:text-red-400 hover:bg-red-500/10 w-full transition-all duration-200"
         >
-          <LogOut className="h-5 w-5 shrink-0" />
+          <LogOut className="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" />
           <span>Cerrar Sesión</span>
         </button>
       </div>

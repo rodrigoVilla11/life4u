@@ -108,14 +108,14 @@ export function FinancesPageClient({ transactions, categories, accounts, recurri
   async function handleDeleteTx() {
     if (!deleteTxId) return;
     try { await deleteTransaction(deleteTxId); toast.success("Movimiento eliminado"); }
-    catch { toast.error("Error"); }
+    catch (err) { console.error("FinancesPageClient.handleDeleteTx:", err); toast.error("Error al eliminar movimiento"); }
     setDeleteTxId(null);
   }
 
   async function handleDeleteRec() {
     if (!deleteRecId) return;
     try { await deleteRecurring(deleteRecId); toast.success("Recurrente eliminado"); }
-    catch { toast.error("Error"); }
+    catch (err) { console.error("FinancesPageClient.handleDeleteRec:", err); toast.error("Error al eliminar recurrencia"); }
     setDeleteRecId(null);
   }
 

@@ -97,7 +97,8 @@ export function GoalAssetsTable({ goalId, currency, assets, rates }: GoalAssetsT
         await deleteGoalAsset(deleteId);
         toast.success("Activo eliminado");
         setDeleteId(null);
-      } catch {
+      } catch (err) {
+        console.error("GoalAssetsTable.handleDelete:", err);
         toast.error("Error al eliminar el activo");
       }
     });
@@ -113,7 +114,7 @@ export function GoalAssetsTable({ goalId, currency, assets, rates }: GoalAssetsT
         </Button>
       </div>
 
-      <div className="rounded-lg border">
+      <div className="rounded-lg border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -205,7 +206,8 @@ function AssetRow({ asset, goalCurrency, rates, onEdit, onDelete }: {
     try {
       await updateGoalAsset(asset.id, { status: newStatus });
       toast.success("Estado actualizado");
-    } catch {
+    } catch (err) {
+      console.error("AssetStatusCell.handleStatusChange:", err);
       setStatus(asset.status); // revert
       toast.error("Error al actualizar");
     } finally {
@@ -244,10 +246,10 @@ function AssetRow({ asset, goalCurrency, rates, onEdit, onDelete }: {
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-1">
-          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onEdit(asset)}>
+          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onEdit(asset)} aria-label="Editar activo">
             <Pencil className="h-3.5 w-3.5" />
           </Button>
-          <Button size="icon" variant="ghost" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => onDelete(asset.id)}>
+          <Button size="icon" variant="ghost" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => onDelete(asset.id)} aria-label="Eliminar activo">
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
         </div>
@@ -300,7 +302,8 @@ function AssetFormDialog({
         }
         reset();
         onOpenChange(false);
-      } catch {
+      } catch (err) {
+        console.error("GoalAssetsTable.onSubmit:", err);
         toast.error("Error al guardar el activo");
       }
     });

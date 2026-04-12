@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /tasks
+Disallow: /finances
+Disallow: /accounts
+Disallow: /goals
+Disallow: /gym
+Disallow: /habits
+Disallow: /study
+Disallow: /calendar
+Disallow: /reports
+Disallow: /settings
+Disallow: /api/
+
+Sitemap: /sitemap.xml

@@ -64,7 +64,8 @@ export function RecurringForm({ open, onOpenChange, categories, accounts }: Recu
       // Reset
       setName(""); setAmount(""); setType("EXPENSE"); setFrequency("MONTHLY");
       setInterval("1"); setCategoryId(""); setAccountId(""); setPaymentMethod("");
-    } catch {
+    } catch (err) {
+      console.error("RecurringForm.handleSubmit:", err);
       toast.error("Error al crear recurrente");
     } finally {
       setLoading(false);

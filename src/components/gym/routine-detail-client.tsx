@@ -120,7 +120,8 @@ export function RoutineDetailClient({ routine }: { routine: Routine }) {
       });
       toast.success("Rutina actualizada");
       setEditRoutineOpen(false);
-    } catch {
+    } catch (err) {
+      console.error("RoutineDetailClient.handleEditRoutine:", err);
       toast.error("Error al actualizar la rutina");
     } finally {
       setSaving(false);
@@ -133,7 +134,8 @@ export function RoutineDetailClient({ routine }: { routine: Routine }) {
       await deleteRoutine(routine.id);
       toast.success("Rutina eliminada");
       router.push("/gym");
-    } catch {
+    } catch (err) {
+      console.error("RoutineDetailClient.handleDeleteRoutine:", err);
       toast.error("Error al eliminar la rutina");
     } finally {
       setDeletingRoutine(false);
@@ -174,7 +176,8 @@ export function RoutineDetailClient({ routine }: { routine: Routine }) {
         toast.success("Dia agregado");
       }
       setDayDialogOpen(false);
-    } catch {
+    } catch (err) {
+      console.error("RoutineDetailClient.handleSaveDay:", err);
       toast.error("Error al guardar el dia");
     } finally {
       setSavingDay(false);
@@ -189,7 +192,8 @@ export function RoutineDetailClient({ routine }: { routine: Routine }) {
       toast.success("Dia eliminado");
       setDeleteDayOpen(false);
       setDayToDelete(null);
-    } catch {
+    } catch (err) {
+      console.error("RoutineDetailClient.handleDeleteDay:", err);
       toast.error("Error al eliminar el dia");
     } finally {
       setDeletingDay(false);
@@ -233,7 +237,8 @@ export function RoutineDetailClient({ routine }: { routine: Routine }) {
         getPreviousWorkoutData(day.id),
       ]);
       setActiveWorkout({ log, dayName: day.name, previousEntries });
-    } catch {
+    } catch (err) {
+      console.error("RoutineDetailClient.handleStartWorkout:", err);
       toast.error("Error al iniciar el entrenamiento");
     }
   }

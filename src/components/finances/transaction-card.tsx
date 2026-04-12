@@ -95,7 +95,8 @@ export function TransactionCard({ transaction, onEdit }: TransactionCardProps) {
       await deleteTransaction(transaction.id);
       toast.success("Movimiento eliminado");
       setShowDelete(false);
-    } catch {
+    } catch (err) {
+      console.error("TransactionCard.handleDelete:", err);
       toast.error("Error al eliminar el movimiento");
     } finally {
       setDeleting(false);

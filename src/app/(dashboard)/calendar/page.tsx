@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { getCalendarEvents } from "@/actions/calendar";
 import { CalendarPageClient } from "@/components/calendar/calendar-page-client";
+
+export const metadata: Metadata = { title: "Calendario" };
 
 export default async function CalendarPage() {
   const now = new Date();

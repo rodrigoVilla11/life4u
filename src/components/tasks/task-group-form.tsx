@@ -73,7 +73,8 @@ export function TaskGroupForm({ open, onOpenChange, editGroup, goals = [] }: Tas
         toast.success("Grupo creado");
       }
       onOpenChange(false);
-    } catch {
+    } catch (err) {
+      console.error("TaskGroupForm.onSubmit:", err);
       toast.error("Error al guardar grupo");
     } finally {
       setLoading(false);

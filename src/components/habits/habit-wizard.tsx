@@ -106,7 +106,7 @@ export function HabitWizard({ open, onOpenChange }: HabitWizardProps) {
       toast.success("¡Hábito creado!");
       reset();
       onOpenChange(false);
-    } catch { toast.error("Error al crear hábito"); }
+    } catch (err) { console.error("HabitWizard.handleCreate:", err); toast.error("Error al crear hábito"); }
     finally { setLoading(false); }
   }
 

@@ -75,7 +75,8 @@ export function QuickSessionDialog({ open, onOpenChange, subjects }: Props) {
           subjectName: session.subject?.name ?? undefined,
           topicName: session.topic?.title ?? undefined,
         });
-      } catch {
+      } catch (err) {
+        console.error("QuickSessionDialog.handleStart:", err);
         toast.error("Error al iniciar la sesion");
       }
     });

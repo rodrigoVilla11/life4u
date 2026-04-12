@@ -90,7 +90,8 @@ export function ExerciseForm({ open, onOpenChange, dayId, exercise, prefill }: E
         toast.success("Ejercicio agregado");
       }
       onOpenChange(false);
-    } catch {
+    } catch (err) {
+      console.error("ExerciseForm.onSubmit:", err);
       toast.error("Error al guardar ejercicio");
     } finally {
       setLoading(false);

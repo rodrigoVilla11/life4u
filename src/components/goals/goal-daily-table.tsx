@@ -108,7 +108,8 @@ export function GoalDailyTable({ goalId, currency, dailyTable, dailyEntries, rat
         });
         toast.success("Entrada guardada");
         handleCancel();
-      } catch {
+      } catch (err) {
+        console.error("GoalDailyTable.handleSave:", err);
         toast.error("Error al guardar la entrada");
       }
     });
@@ -119,7 +120,8 @@ export function GoalDailyTable({ goalId, currency, dailyTable, dailyEntries, rat
       try {
         await upsertDailyEntry(goalId, { date: dateStr, amount: 0, currency, note: undefined });
         toast.success("Entrada borrada");
-      } catch {
+      } catch (err) {
+        console.error("GoalDailyTable.handleClear:", err);
         toast.error("Error al borrar");
       }
     });
@@ -138,7 +140,7 @@ export function GoalDailyTable({ goalId, currency, dailyTable, dailyEntries, rat
       {/* Quick add for today */}
       <QuickDailyInput goalId={goalId} currency={currency} />
 
-      <div className="rounded-lg border">
+      <div className="rounded-lg border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -253,20 +255,20 @@ export function GoalDailyTable({ goalId, currency, dailyTable, dailyEntries, rat
                   <TableCell>
                     {isEditingThis ? (
                       <div className="flex items-center gap-1">
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleSave} disabled={isPending}>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleSave} disabled={isPending} aria-label="Guardar">
                           {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5 text-green-600" />}
                         </Button>
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleCancel}>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={handleCancel} aria-label="Cancelar">
                           <X className="h-3.5 w-3.5 text-red-500" />
                         </Button>
                       </div>
                     ) : (
                       <div className="flex items-center gap-0.5">
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEdit(row)}>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEdit(row)} aria-label="Editar entrada">
                           <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                         </Button>
                         {row.entryType === "real" && row.amount > 0 && (
-                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleClear(dateStr)} disabled={isPending}>
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleClear(dateStr)} disabled={isPending} aria-label="Eliminar entrada">
                             <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
                           </Button>
                         )}
@@ -329,7 +331,8 @@ function QuickDailyInput({ goalId, currency }: { goalId: string; currency: strin
         toast.success("Ahorro de hoy guardado");
         setAmount("");
         setNote("");
-      } catch {
+      } catch (err) {
+        console.error("TodaySavingInline.handleSave:", err);
         toast.error("Error al guardar");
       }
     });

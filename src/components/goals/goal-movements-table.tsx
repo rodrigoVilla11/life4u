@@ -93,7 +93,8 @@ export function GoalMovementsTable({ goalId, currency, movements, rates }: GoalM
         await deleteGoalMovement(deleteId);
         toast.success("Movimiento eliminado");
         setDeleteId(null);
-      } catch {
+      } catch (err) {
+        console.error("GoalMovementsTable.handleDelete:", err);
         toast.error("Error al eliminar el movimiento");
       }
     });
@@ -109,7 +110,7 @@ export function GoalMovementsTable({ goalId, currency, movements, rates }: GoalM
         </Button>
       </div>
 
-      <div className="rounded-lg border">
+      <div className="rounded-lg border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -147,10 +148,10 @@ export function GoalMovementsTable({ goalId, currency, movements, rates }: GoalM
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEdit(movement)}>
+                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleEdit(movement)} aria-label="Editar movimiento">
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button size="icon" variant="ghost" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => setDeleteId(movement.id)}>
+                      <Button size="icon" variant="ghost" className="h-7 w-7 text-red-500 hover:text-red-600" onClick={() => setDeleteId(movement.id)} aria-label="Eliminar movimiento">
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -267,7 +268,8 @@ function MovementFormDialog({
         }
         reset();
         onOpenChange(false);
-      } catch {
+      } catch (err) {
+        console.error("GoalMovementsTable.onSubmit:", err);
         toast.error("Error al guardar el movimiento");
       }
     });

@@ -57,7 +57,8 @@ export function TaskTree({ tasks: initialTasks, groupId, onAddTask, onEditTask, 
       await createTask({ title, groupId, priority: "MEDIUM", status: "PENDING", tags: [] });
       setQuickAddValue("");
       inputRef.current?.focus();
-    } catch {
+    } catch (err) {
+      console.error("TaskTree.handleQuickAdd:", err);
       toast.error("Error al crear tarea");
     } finally {
       setAdding(false);

@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { createTransaction, updateTransaction } from "@/actions/finance";
 import { CURRENCIES, PAYMENT_METHOD_LABELS, TRANSACTION_TYPE_LABELS } from "@/lib/constants";
 import { ArrowDownLeft, ArrowUpRight, ArrowLeftRight, ImagePlus, X, Loader2 } from "lucide-react";
+import Image from "next/image";
 
 interface Category { id: string; name: string; type: string; icon: string | null; }
 interface Account { id: string; name: string; type: string; }
@@ -92,11 +93,16 @@ export function TransactionForm({ open, onOpenChange, categories, accounts, edit
       return;
     }
 
+    if (!uploadPreset) {
+      toast.error("Configurá NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET en .env");
+      return;
+    }
+
     setUploading(true);
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("upload_preset", uploadPreset || "life4u-unsigned");
+      formData.append("upload_preset", uploadPreset!);
 
       const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
         method: "POST",
@@ -107,7 +113,8 @@ export function TransactionForm({ open, onOpenChange, categories, accounts, edit
       const data = await res.json();
       setReceiptUrl(data.secure_url);
       toast.success("Comprobante subido");
-    } catch {
+    } catch (err) {
+      console.error("TransactionForm.handleUpload:", err);
       toast.error("Error al subir imagen");
     } finally {
       setUploading(false);
@@ -136,7 +143,8 @@ export function TransactionForm({ open, onOpenChange, categories, accounts, edit
         toast.success("Movimiento creado");
       }
       onOpenChange(false);
-    } catch {
+    } catch (err) {
+      console.error("TransactionForm.handleSubmit:", err);
       toast.error("Error al guardar");
     } finally {
       setLoading(false);
@@ -178,8 +186,9 @@ export function TransactionForm({ open, onOpenChange, categories, accounts, edit
           {/* ===== AMOUNT + CURRENCY ===== */}
           <div className="flex gap-3">
             <div className="flex-1 space-y-1.5">
-              <Label className="text-xs text-muted-foreground uppercase tracking-wide">Monto</Label>
+              <Label htmlFor="tx-amount" className="text-xs text-muted-foreground uppercase tracking-wide">Monto</Label>
               <Input
+                id="tx-amount"
                 type="number"
                 step="0.01"
                 min="0"
@@ -191,8 +200,8 @@ export function TransactionForm({ open, onOpenChange, categories, accounts, edit
               />
             </div>
             <div className="w-24 space-y-1.5">
-              <Label className="text-xs text-muted-foreground uppercase tracking-wide">Moneda</Label>
-              <NativeSelect value={currency} onChange={(e) => setCurrency(e.target.value)} className="h-14">
+              <Label htmlFor="tx-currency" className="text-xs text-muted-foreground uppercase tracking-wide">Moneda</Label>
+              <NativeSelect id="tx-currency" value={currency} onChange={(e) => setCurrency(e.target.value)} className="h-14">
                 {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.symbol} {c.code}</option>)}
               </NativeSelect>
             </div>
@@ -201,20 +210,20 @@ export function TransactionForm({ open, onOpenChange, categories, accounts, edit
           {/* ===== DATE + DESCRIPTION ===== */}
           <div className="grid grid-cols-5 gap-3">
             <div className="col-span-2 space-y-1.5">
-              <Label className="text-xs text-muted-foreground uppercase tracking-wide">Fecha</Label>
-              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+              <Label htmlFor="tx-date" className="text-xs text-muted-foreground uppercase tracking-wide">Fecha</Label>
+              <Input id="tx-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
             <div className="col-span-3 space-y-1.5">
-              <Label className="text-xs text-muted-foreground uppercase tracking-wide">Descripción</Label>
-              <Input placeholder="Ej: Supermercado, Uber..." value={description} onChange={(e) => setDescription(e.target.value)} />
+              <Label htmlFor="tx-description" className="text-xs text-muted-foreground uppercase tracking-wide">Descripción</Label>
+              <Input id="tx-description" placeholder="Ej: Supermercado, Uber..." value={description} onChange={(e) => setDescription(e.target.value)} />
             </div>
           </div>
 
           {/* ===== CATEGORY + ACCOUNT ===== */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground uppercase tracking-wide">Categoría</Label>
-              <NativeSelect value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+              <Label htmlFor="tx-category" className="text-xs text-muted-foreground uppercase tracking-wide">Categoría</Label>
+              <NativeSelect id="tx-category" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
                 <option value="">Sin categoría</option>
                 {filteredCategories.map((cat) => (
                   <option key={cat.id} value={cat.id}>{cat.icon ?? ""} {cat.name}</option>
@@ -222,8 +231,8 @@ export function TransactionForm({ open, onOpenChange, categories, accounts, edit
               </NativeSelect>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground uppercase tracking-wide">Cuenta</Label>
-              <NativeSelect value={accountId} onChange={(e) => setAccountId(e.target.value)}>
+              <Label htmlFor="tx-account" className="text-xs text-muted-foreground uppercase tracking-wide">Cuenta</Label>
+              <NativeSelect id="tx-account" value={accountId} onChange={(e) => setAccountId(e.target.value)}>
                 <option value="">Sin cuenta</option>
                 {accounts.map((acc) => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
               </NativeSelect>
@@ -233,8 +242,8 @@ export function TransactionForm({ open, onOpenChange, categories, accounts, edit
           {/* ===== TO ACCOUNT (transfers only) ===== */}
           {type === "TRANSFER" && (
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground uppercase tracking-wide">Cuenta destino</Label>
-              <NativeSelect value={toAccountId} onChange={(e) => setToAccountId(e.target.value)}>
+              <Label htmlFor="tx-to-account" className="text-xs text-muted-foreground uppercase tracking-wide">Cuenta destino</Label>
+              <NativeSelect id="tx-to-account" value={toAccountId} onChange={(e) => setToAccountId(e.target.value)}>
                 <option value="">Seleccionar cuenta</option>
                 {accounts.map((acc) => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
               </NativeSelect>
@@ -244,14 +253,14 @@ export function TransactionForm({ open, onOpenChange, categories, accounts, edit
           {/* ===== PAYMENT METHOD + FIXED ===== */}
           <div className="flex items-end gap-3">
             <div className="flex-1 space-y-1.5">
-              <Label className="text-xs text-muted-foreground uppercase tracking-wide">Método de pago</Label>
-              <NativeSelect value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
+              <Label htmlFor="tx-payment" className="text-xs text-muted-foreground uppercase tracking-wide">Método de pago</Label>
+              <NativeSelect id="tx-payment" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
                 <option value="">Sin especificar</option>
                 {Object.entries(PAYMENT_METHOD_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </NativeSelect>
             </div>
             <div className="flex items-center gap-2 pb-2.5">
-              <Switch checked={isFixed} onCheckedChange={setIsFixed} />
+              <Switch checked={isFixed} onCheckedChange={setIsFixed} aria-label="Gasto fijo" />
               <Label className="text-sm">Fijo</Label>
             </div>
           </div>
@@ -261,10 +270,11 @@ export function TransactionForm({ open, onOpenChange, categories, accounts, edit
             <Label className="text-xs text-muted-foreground uppercase tracking-wide">Comprobante</Label>
             {receiptUrl ? (
               <div className="relative rounded-xl overflow-hidden border bg-muted/30">
-                <img src={receiptUrl} alt="Comprobante" className="w-full max-h-48 object-cover" />
+                <Image src={receiptUrl} alt="Comprobante" width={400} height={192} className="w-full max-h-48 object-cover" />
                 <button
                   type="button"
                   onClick={() => setReceiptUrl("")}
+                  aria-label="Quitar comprobante"
                   className="absolute top-2 right-2 p-1 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
                 >
                   <X className="h-4 w-4" />
@@ -289,8 +299,8 @@ export function TransactionForm({ open, onOpenChange, categories, accounts, edit
 
           {/* ===== NOTES ===== */}
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground uppercase tracking-wide">Notas</Label>
-            <Textarea placeholder="Notas adicionales..." rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <Label htmlFor="tx-notes" className="text-xs text-muted-foreground uppercase tracking-wide">Notas</Label>
+            <Textarea id="tx-notes" placeholder="Notas adicionales..." rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
 
           {/* ===== ACTIONS ===== */}

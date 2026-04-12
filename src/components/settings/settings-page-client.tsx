@@ -120,7 +120,8 @@ export function SettingsPageClient({ settings, incomeCategories, expenseCategori
         ...modules,
       });
       toast.success("Configuración guardada. Recargá la página para ver los cambios en la navegación.");
-    } catch {
+    } catch (err) {
+      console.error("SettingsPageClient.handleSave:", err);
       toast.error("Error al guardar");
     } finally {
       setSaving(false);
@@ -133,7 +134,8 @@ export function SettingsPageClient({ settings, incomeCategories, expenseCategori
       await createCategory({ name: newCatName.trim(), type: newCatType });
       setNewCatName("");
       toast.success("Categoría creada");
-    } catch {
+    } catch (err) {
+      console.error("SettingsPageClient.handleAddCategory:", err);
       toast.error("Error al crear categoría");
     }
   }
@@ -142,7 +144,8 @@ export function SettingsPageClient({ settings, incomeCategories, expenseCategori
     try {
       await deleteCategory(id);
       toast.success("Categoría eliminada");
-    } catch {
+    } catch (err) {
+      console.error("SettingsPageClient.handleDeleteCategory:", err);
       toast.error("Error al eliminar");
     }
   }
@@ -468,7 +471,7 @@ export function SettingsPageClient({ settings, incomeCategories, expenseCategori
                     className="shrink-0 text-muted-foreground hover:text-destructive"
                     onClick={async () => {
                       try { await deleteExchangeRate(rate.id); toast.success("Tipo de cambio eliminado"); }
-                      catch { toast.error("Error al eliminar"); }
+                      catch (err) { console.error("SettingsPageClient.deleteExchangeRate:", err); toast.error("Error al eliminar"); }
                     }}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -521,7 +524,8 @@ function ExchangeRateForm({ defaultCurrency }: { defaultCurrency: string }) {
       await upsertExchangeRate({ fromCurrency: from, toCurrency: to, rate: Number(rate) });
       setRate("");
       toast.success(`Tipo de cambio ${from} → ${to} guardado`);
-    } catch {
+    } catch (err) {
+      console.error("ExchangeRateForm.handleAdd:", err);
       toast.error("Error al guardar");
     } finally {
       setAdding(false);

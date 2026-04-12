@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
-import { Plus, ListChecks, GripVertical } from "lucide-react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { Plus, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TaskItem } from "@/components/tasks/task-item";
 import { createTask, reorderTasks } from "@/actions/tasks";
@@ -11,8 +11,7 @@ import {
   DndContext, closestCenter, PointerSensor, TouchSensor,
   useSensor, useSensors, type DragEndEvent,
 } from "@dnd-kit/core";
-import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 
 interface TaskTreeProps {
   tasks: TaskNode[];
@@ -28,8 +27,7 @@ export function TaskTree({ tasks: initialTasks, groupId, onAddTask, onEditTask, 
   const [adding, setAdding] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Sync when server data changes
-  useState(() => { setTasks(initialTasks); });
+  useEffect(() => { setTasks(initialTasks); }, [initialTasks]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -72,16 +70,16 @@ export function TaskTree({ tasks: initialTasks, groupId, onAddTask, onEditTask, 
 
   if (tasks.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 sm:py-20 px-6 text-center">
-        <div className="h-14 w-14 rounded-2xl bg-muted flex items-center justify-center mb-4">
-          <ListChecks className="h-7 w-7 text-muted-foreground" />
+      <div className="flex flex-col items-center justify-center py-14 px-6 text-center">
+        <div className="h-12 w-12 rounded-xl bg-muted flex items-center justify-center mb-4">
+          <ListChecks className="h-6 w-6 text-muted-foreground" />
         </div>
-        <h3 className="text-base font-semibold mb-1">Sin tareas todavía</h3>
-        <p className="text-sm text-muted-foreground mb-5 max-w-[280px] leading-relaxed">
-          Creá tu primera tarea para empezar a organizar este grupo.
+        <h3 className="text-sm font-semibold mb-1">Sin tareas todavía</h3>
+        <p className="text-xs text-muted-foreground mb-4 max-w-[240px]">
+          Creá tu primera tarea para empezar.
         </p>
-        <Button onClick={() => onAddTask()} className="gap-2">
-          <Plus className="h-4 w-4" />
+        <Button size="sm" onClick={() => onAddTask()} className="gap-1.5">
+          <Plus className="h-3.5 w-3.5" />
           Nueva tarea
         </Button>
       </div>
@@ -92,23 +90,25 @@ export function TaskTree({ tasks: initialTasks, groupId, onAddTask, onEditTask, 
     <div className="w-full">
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-          <div>
+          <div className="divide-y divide-border/40">
             {tasks.map((task) => (
-              <SortableTaskItem
+              <TaskItem
                 key={task.id}
                 task={task}
+                depth={0}
                 onAddChild={handleAddChild}
                 onEditTask={onEditTask}
                 onTaskToggled={onTaskToggled}
+                sortable
               />
             ))}
           </div>
         </SortableContext>
       </DndContext>
 
-      {/* Quick add input */}
-      <div className="flex items-center gap-3 px-4 py-3 border-t bg-muted/30">
-        <div className="h-5 w-5 rounded-full border-2 border-dashed border-muted-foreground/25 shrink-0" />
+      {/* Quick add */}
+      <div className="flex items-center gap-3 px-4 py-2.5 border-t border-border/40 bg-muted/20">
+        <div className="h-4 w-4 rounded-full border-2 border-dashed border-muted-foreground/20 shrink-0" />
         <input
           ref={inputRef}
           type="text"
@@ -119,7 +119,7 @@ export function TaskTree({ tasks: initialTasks, groupId, onAddTask, onEditTask, 
           }}
           placeholder="Agregar tarea rápida..."
           disabled={adding}
-          className="flex-1 min-w-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground/50 py-1"
+          className="flex-1 min-w-0 bg-transparent text-sm outline-none placeholder:text-muted-foreground/40 py-1 text-foreground"
         />
         {quickAddValue.trim() && (
           <Button size="xs" onClick={handleQuickAdd} disabled={adding} className="shrink-0">
@@ -127,42 +127,6 @@ export function TaskTree({ tasks: initialTasks, groupId, onAddTask, onEditTask, 
           </Button>
         )}
       </div>
-    </div>
-  );
-}
-
-function SortableTaskItem({ task, onAddChild, onEditTask, onTaskToggled }: {
-  task: TaskNode;
-  onAddChild: (parentId: string) => void;
-  onEditTask: (task: TaskNode) => void;
-  onTaskToggled?: (wasCompleted: boolean) => void;
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : 1,
-    zIndex: isDragging ? 50 : undefined,
-  };
-
-  return (
-    <div ref={setNodeRef} style={style} className="relative">
-      {/* Drag handle - anchored to first row only (48px height) */}
-      <div
-        {...attributes}
-        {...listeners}
-        className="absolute left-1 top-[24px] -translate-y-1/2 p-1 rounded-md cursor-grab active:cursor-grabbing touch-none z-10 text-muted-foreground/30 hover:text-muted-foreground/60 transition-colors"
-      >
-        <GripVertical className="h-4 w-4" />
-      </div>
-      <TaskItem
-        task={task}
-        depth={0}
-        onAddChild={onAddChild}
-        onEditTask={onEditTask}
-        onTaskToggled={onTaskToggled}
-      />
     </div>
   );
 }

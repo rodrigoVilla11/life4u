@@ -22,7 +22,7 @@ const allNavItems = [
   { href: "/habits", label: "Hábitos", icon: Repeat, module: "habits" as const },
   { href: "/study", label: "Estudio", icon: BookOpen, module: "study" as const },
   { href: "/calendar", label: "Calendario", icon: CalendarDays, module: "calendar" as const },
-  { href: "/settings", label: "Configuración", icon: Settings, module: null },
+  { href: "/settings", label: "Ajustes", icon: Settings, module: null },
 ];
 
 export function MobileSidebar({ modules }: { modules?: ModuleConfig }) {
@@ -33,19 +33,17 @@ export function MobileSidebar({ modules }: { modules?: ModuleConfig }) {
   );
 
   return (
-    <div className="flex flex-col h-full bg-card/95 backdrop-blur-xl">
-      {/* Logo */}
-      <div className="flex items-center h-16 px-5 border-b border-border/50">
-        <Link href="/dashboard" className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center shadow-md shadow-primary/20">
-            <span className="text-primary-foreground font-black text-sm tracking-tighter">L4U</span>
+    <div className="flex flex-col h-full bg-sidebar">
+      <div className="flex items-center h-16 px-5 border-b border-border/40">
+        <Link href="/dashboard" className="flex items-center gap-3">
+          <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shadow-sm shadow-primary/20">
+            <span className="text-primary-foreground font-extrabold text-xs tracking-tighter">L4U</span>
           </div>
-          <span className="font-bold text-[17px] tracking-tight">Life4U</span>
+          <span className="font-bold text-[15px] tracking-tight">Life4U</span>
         </Link>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           return (
@@ -53,16 +51,13 @@ export function MobileSidebar({ modules }: { modules?: ModuleConfig }) {
               <Link
                 href={item.href}
                 className={cn(
-                  "group flex items-center gap-3 px-3.5 py-3 rounded-xl text-[15px] font-medium transition-all duration-200",
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium transition-all duration-150",
                   isActive
-                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/80"
+                    ? "bg-primary text-primary-foreground shadow-sm shadow-primary/15"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
                 )}
               >
-                <item.icon className={cn(
-                  "h-5 w-5 shrink-0 transition-transform",
-                  !isActive && "group-hover:scale-110"
-                )} />
+                <item.icon className="h-4.5 w-4.5 shrink-0" />
                 <span>{item.label}</span>
               </Link>
             </SheetClose>
@@ -70,13 +65,12 @@ export function MobileSidebar({ modules }: { modules?: ModuleConfig }) {
         })}
       </nav>
 
-      {/* Logout */}
-      <div className="p-3 border-t border-border/50">
+      <div className="px-3 py-3 border-t border-border/40">
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="group flex items-center gap-3 px-3.5 py-3 rounded-xl text-[15px] font-medium text-muted-foreground hover:text-red-500 dark:hover:text-red-400 hover:bg-red-500/10 w-full transition-all duration-200"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/8 w-full transition-all duration-150"
         >
-          <LogOut className="h-5 w-5 shrink-0 group-hover:scale-110 transition-transform" />
+          <LogOut className="h-4.5 w-4.5 shrink-0" />
           <span>Cerrar Sesión</span>
         </button>
       </div>

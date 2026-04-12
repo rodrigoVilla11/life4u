@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   DndContext, closestCenter, PointerSensor, TouchSensor,
   useSensor, useSensors, type DragEndEvent,
@@ -30,10 +30,8 @@ export function TasksPageClient({ groups: initialGroups, goals }: TasksPageClien
   const [localGroups, setLocalGroups] = useState(initialGroups);
   const groups = localGroups;
 
-  // Sync when server data changes
   useEffect(() => { setLocalGroups(initialGroups); }, [initialGroups]);
 
-  // Drag & drop sensors
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } })
@@ -47,7 +45,6 @@ export function TasksPageClient({ groups: initialGroups, goals }: TasksPageClien
       const newIndex = prev.findIndex((g) => g.id === over.id);
       if (oldIndex < 0 || newIndex < 0) return prev;
       const moved = arrayMove(prev, oldIndex, newIndex);
-      // Persist to server
       reorderGroups(moved.map((g) => g.id));
       return moved;
     });
@@ -62,29 +59,22 @@ export function TasksPageClient({ groups: initialGroups, goals }: TasksPageClien
   const [detailTask, setDetailTask] = useState<TaskNode | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [search, setSearch] = useState("");
-  // Optimistic progress: track delta of completions done in this session
   const [completionDelta, setCompletionDelta] = useState(0);
 
   const activeGroup = activeGroupId ? groups.find((g) => g.id === activeGroupId) : null;
 
-  // Reset delta when switching groups
   const handleOpenGroupWithReset = useCallback((groupId: string) => {
     setActiveGroupId(groupId);
     setCompletionDelta(0);
     setSearch("");
   }, []);
 
-  // Called by TaskItem when a task is toggled
   const handleTaskToggled = useCallback((wasCompleted: boolean) => {
     setCompletionDelta((d) => wasCompleted ? d - 1 : d + 1);
   }, []);
 
-  // Reset delta when server data changes (groups prop updates)
-  useEffect(() => {
-    setCompletionDelta(0);
-  }, [groups]);
+  useEffect(() => { setCompletionDelta(0); }, [groups]);
 
-  // Progress from server data (most accurate) + delta for optimistic
   const optimisticCompleted = activeGroup ? Math.max(0, activeGroup.completedTasks + completionDelta) : 0;
   const optimisticTotal = activeGroup ? activeGroup.totalTasks : 0;
   const optimisticProgress = optimisticTotal > 0
@@ -139,7 +129,6 @@ export function TasksPageClient({ groups: initialGroups, goals }: TasksPageClien
     }, []);
   }
 
-  // Compute totals for the overview header
   const totalTasks = groups.reduce((s, g) => s + g.totalTasks, 0);
   const completedTasks = groups.reduce((s, g) => s + g.completedTasks, 0);
 
@@ -148,12 +137,12 @@ export function TasksPageClient({ groups: initialGroups, goals }: TasksPageClien
   // ==========================================
   if (!activeGroup) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 animate-fade-in-up">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Tareas</h1>
-            <p className="text-muted-foreground text-[15px] mt-1">Organizá tus proyectos y tareas en grupos</p>
+            <h1>Tareas</h1>
+            <p className="text-muted-foreground text-sm mt-1">Organizá tus proyectos y tareas en grupos</p>
           </div>
           <Button onClick={handleNewGroup} className="gap-2 self-start sm:self-auto">
             <Plus className="h-4 w-4" />
@@ -163,27 +152,27 @@ export function TasksPageClient({ groups: initialGroups, goals }: TasksPageClien
 
         {/* Overview stats */}
         {groups.length > 0 && (
-          <div className="flex flex-wrap gap-3">
-            <Badge variant="secondary" className="gap-1.5 py-1.5 px-3 text-sm">
-              <FolderOpen className="h-3.5 w-3.5" />
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs">
+              <FolderOpen className="h-3 w-3" />
               {groups.length} {groups.length === 1 ? "grupo" : "grupos"}
             </Badge>
-            <Badge variant="secondary" className="gap-1.5 py-1.5 px-3 text-sm">
-              <ListTodo className="h-3.5 w-3.5" />
+            <Badge variant="secondary" className="gap-1.5 py-1 px-2.5 text-xs">
+              <ListTodo className="h-3 w-3" />
               {totalTasks} tareas
             </Badge>
-            <Badge variant="success" className="gap-1.5 py-1.5 px-3 text-sm">
-              <CheckCircle2 className="h-3.5 w-3.5" />
+            <Badge variant="success" className="gap-1.5 py-1 px-2.5 text-xs">
+              <CheckCircle2 className="h-3 w-3" />
               {completedTasks} completadas
             </Badge>
           </div>
         )}
 
-        {/* Groups grid with drag & drop */}
+        {/* Groups grid */}
         {groups.length > 0 ? (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={groups.map((g) => g.id)} strategy={rectSortingStrategy}>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {groups.map((group) => (
                   <SortableGroupCard
                     key={group.id}
@@ -199,7 +188,7 @@ export function TasksPageClient({ groups: initialGroups, goals }: TasksPageClien
           <EmptyState
             icon={FolderOpen}
             title="No hay grupos todavía"
-            description="Creá tu primer grupo para organizar tareas. Por ejemplo: 'Visa España', 'Mudanza', 'Proyecto X'."
+            description="Creá tu primer grupo para organizar tareas."
             actionLabel="Crear Grupo"
             onAction={handleNewGroup}
           />
@@ -216,75 +205,68 @@ export function TasksPageClient({ groups: initialGroups, goals }: TasksPageClien
   }
 
   // ==========================================
-  // GROUP DETAIL WITH TASK TREE
+  // GROUP DETAIL
   // ==========================================
   const filteredTasks = filterTasks(activeGroup.tasks, search);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 animate-fade-in-up">
       {/* Header */}
       <div className="flex items-start gap-3">
         <Button
           variant="ghost"
           size="icon-sm"
           onClick={() => setActiveGroupId(null)}
-          className="mt-1 shrink-0"
+          className="mt-0.5 shrink-0"
+          aria-label="Volver a grupos"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2.5">
             <div
-              className="h-8 w-8 rounded-lg shrink-0 flex items-center justify-center"
+              className="h-7 w-7 rounded-lg shrink-0 flex items-center justify-center"
               style={{ backgroundColor: activeGroup.color ?? "#6366f1" }}
             >
-              <FolderOpen className="h-4 w-4 text-white" />
+              <FolderOpen className="h-3.5 w-3.5 text-white" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold tracking-tight truncate">{activeGroup.name}</h1>
+              <h2 className="truncate">{activeGroup.name}</h2>
               {activeGroup.description && (
-                <p className="text-sm text-muted-foreground truncate">{activeGroup.description}</p>
+                <p className="text-xs text-muted-foreground truncate">{activeGroup.description}</p>
               )}
             </div>
           </div>
         </div>
-        <Button onClick={() => handleAddTask()} size="sm" className="gap-2 shrink-0">
-          <Plus className="h-4 w-4" />
+        <Button onClick={() => handleAddTask()} size="sm" className="gap-1.5 shrink-0">
+          <Plus className="h-3.5 w-3.5" />
           <span className="hidden sm:inline">Nueva Tarea</span>
         </Button>
       </div>
 
-      {/* Progress + stats */}
+      {/* Progress */}
       {activeGroup.totalTasks > 0 && (
-        <div className="bg-card border rounded-2xl p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Progreso</span>
-              <Badge variant={optimisticProgress >= 100 ? "success" : "secondary"} className="text-xs">
-                {Math.round(optimisticProgress)}%
-              </Badge>
-            </div>
-            <span className="text-sm text-muted-foreground">
-              {optimisticCompleted} de {activeGroup.totalTasks} tareas
-            </span>
-          </div>
-          <Progress value={optimisticProgress} className="h-2.5 transition-all duration-300" />
+        <div className="flex items-center gap-3 px-1">
+          <Progress value={optimisticProgress} className="h-1.5 flex-1" />
+          <span className="text-xs text-muted-foreground tabular-nums shrink-0">
+            {optimisticCompleted}/{activeGroup.totalTasks}
+          </span>
         </div>
       )}
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar tareas..."
-          className="pl-10 max-w-md"
+          className="pl-9 h-9 max-w-sm"
         />
       </div>
 
       {/* Task Tree */}
-      <div className="border rounded-2xl bg-card overflow-hidden">
+      <div className="border border-border/50 rounded-xl bg-card overflow-hidden">
         <TaskTree
           tasks={filteredTasks}
           groupId={activeGroup.id}
@@ -294,7 +276,6 @@ export function TasksPageClient({ groups: initialGroups, goals }: TasksPageClien
         />
       </div>
 
-      {/* Task Form Dialog (create only) */}
       <TaskForm
         open={taskFormOpen}
         onOpenChange={setTaskFormOpen}
@@ -304,7 +285,6 @@ export function TasksPageClient({ groups: initialGroups, goals }: TasksPageClien
         goals={goals.map((g) => ({ id: g.goalId, name: g.name }))}
       />
 
-      {/* Task Detail Sheet (view/edit) */}
       <TaskDetailSheet
         task={detailTask}
         open={detailOpen}
@@ -348,14 +328,14 @@ function SortableGroupCard({ group, onOpen, onEdit }: {
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="relative">
-      {/* Drag handle */}
+    <div ref={setNodeRef} style={style} className="relative group/sortable">
+      {/* Drag handle - integrated into card top-left */}
       <div
         {...attributes}
         {...listeners}
-        className="absolute top-2 left-2 z-10 p-1.5 rounded-lg bg-background/80 backdrop-blur-sm opacity-0 hover:opacity-100 focus:opacity-100 cursor-grab active:cursor-grabbing touch-none transition-opacity"
+        className="absolute top-3 left-3 z-10 p-1 rounded-md cursor-grab active:cursor-grabbing touch-none text-muted-foreground/30 hover:text-muted-foreground/70 transition-colors"
       >
-        <GripVertical className="h-4 w-4 text-muted-foreground" />
+        <GripVertical className="h-4 w-4" />
       </div>
       <TaskGroupCard
         group={group}

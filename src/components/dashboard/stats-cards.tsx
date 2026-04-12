@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { ClipboardList, AlertTriangle, TrendingUp, PiggyBank } from "lucide-react";
 import { getCurrencySymbol } from "@/lib/constants";
 
@@ -36,37 +31,27 @@ export function StatsCards({
 
   const cards = [
     {
-      title: "Tareas Pendientes Hoy",
+      title: "Pendientes Hoy",
       value: todayPending.toString(),
       icon: ClipboardList,
-      accent: "text-amber-600 dark:text-amber-400",
-      bg: "bg-amber-50 dark:bg-amber-950/40",
-      borderAccent: "border-amber-200 dark:border-amber-800/50",
+      color: "text-amber-600 dark:text-amber-400",
+      iconBg: "bg-amber-500/10",
     },
     {
       title: "Tareas Vencidas",
       value: overdue.toString(),
       icon: AlertTriangle,
-      accent: "text-red-600 dark:text-red-400",
-      bg: "bg-red-50 dark:bg-red-950/40",
-      borderAccent: "border-red-200 dark:border-red-800/50",
+      color: "text-red-600 dark:text-red-400",
+      iconBg: "bg-red-500/10",
     },
     {
       title: "Balance del Mes",
       value: formatCurrency(monthBalance),
       icon: TrendingUp,
-      accent:
-        monthBalance >= 0
-          ? "text-emerald-600 dark:text-emerald-400"
-          : "text-red-600 dark:text-red-400",
-      bg:
-        monthBalance >= 0
-          ? "bg-emerald-50 dark:bg-emerald-950/40"
-          : "bg-red-50 dark:bg-red-950/40",
-      borderAccent:
-        monthBalance >= 0
-          ? "border-emerald-200 dark:border-emerald-800/50"
-          : "border-red-200 dark:border-red-800/50",
+      color: monthBalance >= 0
+        ? "text-emerald-600 dark:text-emerald-400"
+        : "text-red-600 dark:text-red-400",
+      iconBg: monthBalance >= 0 ? "bg-emerald-500/10" : "bg-red-500/10",
     },
     {
       title: "Ahorro Acumulado",
@@ -75,28 +60,27 @@ export function StatsCards({
         maximumFractionDigits: 2,
       })}`,
       icon: PiggyBank,
-      accent: "text-blue-600 dark:text-blue-400",
-      bg: "bg-blue-50 dark:bg-blue-950/40",
-      borderAccent: "border-blue-200 dark:border-blue-800/50",
+      color: "text-blue-600 dark:text-blue-400",
+      iconBg: "bg-blue-500/10",
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {cards.map((card) => (
-        <Card key={card.title} className={`${card.borderAccent} py-4`}>
-          <CardHeader className="flex flex-row items-center justify-between pb-1 space-y-0">
-            <CardTitle className="text-xs font-medium text-muted-foreground tracking-wide uppercase">
-              {card.title}
-            </CardTitle>
-            <div className={`rounded-lg p-2 ${card.bg}`}>
-              <card.icon className={`h-4 w-4 ${card.accent}`} />
+        <Card key={card.title} className="py-0">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider leading-tight">
+                {card.title}
+              </p>
+              <div className={`rounded-lg p-1.5 ${card.iconBg}`}>
+                <card.icon className={`h-3.5 w-3.5 ${card.color}`} />
+              </div>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${card.accent}`}>
+            <p className={`text-xl font-bold tracking-tight ${card.color} animate-count-up`}>
               {card.value}
-            </div>
+            </p>
           </CardContent>
         </Card>
       ))}

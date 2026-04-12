@@ -13,7 +13,7 @@ export function Topbar({ modules: _modules }: { modules?: import("@/lib/modules"
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 md:h-16 items-center gap-3 border-b border-border/50 bg-card/60 backdrop-blur-xl px-4 md:px-6">
+    <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-border/40 bg-background/80 backdrop-blur-lg px-4 md:px-6">
       {/* Mobile menu */}
       <Sheet>
         <SheetTrigger asChild>
@@ -30,43 +30,39 @@ export function Topbar({ modules: _modules }: { modules?: import("@/lib/modules"
       <div className="flex-1 max-w-md">
         {searchOpen ? (
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Buscar..."
-              className="pl-9 h-9 md:h-10 rounded-xl bg-accent/50 border-border/50"
+              className="pl-9 h-9"
               autoFocus
               onBlur={() => setSearchOpen(false)}
             />
           </div>
         ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full max-w-sm justify-start text-muted-foreground gap-2 h-9 rounded-xl border-border/50 bg-accent/30 hover:bg-accent/60"
+          <button
+            className="flex items-center w-full max-w-sm h-9 px-3 gap-2 rounded-lg border border-border bg-card text-sm text-muted-foreground hover:bg-accent transition-colors"
             onClick={() => setSearchOpen(true)}
           >
-            <Search className="h-4 w-4" />
+            <Search className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Buscar...</span>
-            <kbd className="hidden md:inline ml-auto pointer-events-none select-none rounded-lg border border-border/50 bg-card/80 px-1.5 py-0.5 font-mono text-[10px] font-medium text-muted-foreground">
-              Ctrl+K
+            <kbd className="hidden md:inline ml-auto text-[10px] font-mono text-muted-foreground/60 border border-border rounded px-1.5 py-0.5">
+              Ctrl K
             </kbd>
-          </Button>
+          </button>
         )}
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="relative overflow-hidden"
-        >
-          <Sun className="h-4.5 w-4.5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-4.5 w-4.5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Cambiar tema</span>
-        </Button>
-      </div>
+      {/* Theme toggle */}
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        className="relative"
+      >
+        <Sun className="h-4 w-4 rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
+        <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
+        <span className="sr-only">Cambiar tema</span>
+      </Button>
     </header>
   );
 }

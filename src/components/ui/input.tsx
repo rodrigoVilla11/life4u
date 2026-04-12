@@ -10,7 +10,7 @@ function Input({
       type={type}
       data-slot="input"
       className={cn(
-        "flex h-11 w-full rounded-xl border border-input bg-background text-foreground px-3.5 py-2.5 text-[15px] leading-tight shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm md:h-10",
+        "flex h-10 w-full rounded-xl border border-border bg-card text-foreground px-3.5 py-2 text-sm shadow-sm transition-all placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:border-ring/50 disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
       {...props}

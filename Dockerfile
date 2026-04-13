@@ -2,7 +2,7 @@ FROM node:20-alpine AS base
 
 # --- Dependencies ---
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY prisma ./prisma/
@@ -10,14 +10,24 @@ RUN npm ci
 
 # --- Build ---
 FROM base AS builder
+RUN apk add --no-cache openssl
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# Prisma generate only needs the schema, not a real DB connection
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 RUN npx prisma generate
+
+# Next.js build - needs NEXTAUTH_SECRET at build time for auth config
+ARG NEXTAUTH_SECRET="build-time-placeholder"
+ENV NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # --- Production ---
 FROM base AS runner
+RUN apk add --no-cache openssl
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -36,8 +46,5 @@ USER nextjs
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -qO- http://localhost:3000/api/auth/csrf || exit 1
 
 CMD ["node", "server.js"]

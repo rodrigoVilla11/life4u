@@ -1,8 +1,12 @@
 node_modules
 .next
 .git
-.gitignore
-.env*
+.env
+.env.local
+.env.production
+.env.development
 README.md
+CLAUDE.md
+AGENTS.md
 .vscode
-*.md
+.claude
